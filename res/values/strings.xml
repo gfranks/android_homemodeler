@@ -1,0 +1,14 @@
+<resources>
+
+    <string name="app_name">Home Modeler</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="menu_settings">Settings</string>
+    <string name="title_activity_splash">HomeModeler</string>
+    <string name="title_activity_tab">Home Modeler</string>
+    
+    <!-- PHOTO TILES STRINGS -->
+    <string name="photo_tiles_add">Add Photo</string>
+    <string name="photo_tiles_edit">Edit Photos</string>
+    <string name="photo_tiles_done">Done</string>
+
+</resources>
