@@ -7,8 +7,14 @@ import java.util.Random;
 import com.home.modeler.R;
 import com.home.modeler.utils.DrawableManager;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.database.Cursor;
+import android.graphics.drawable.Drawable;
+import android.net.Uri;
+import android.provider.MediaStore;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.LocalBroadcastManager;
 import android.view.LayoutInflater;
@@ -24,18 +30,23 @@ import android.widget.CompoundButton.OnCheckedChangeListener;
 
 public abstract class BaseFragment extends Fragment {
 
+	private Context mContext;
 	private int MAX_FILENAME_LENGTH = 100;
-	public final int HOME_PHOTO_RESULT_CODE = 101;
-	public final int ITEM_PHOTO_RESULT_CODE = 102;
+	public final int PHOTOTAKEN_RESULT_CODE = 101;
+	public final int PHOTOSELECTED_RESULT_CODE = 102;
 	public static final String HOME_FILE_DIR = "HomePhotos";
 	public static final String ITEM_FILE_DIR = "ItemPhotos";
 	public static final String HOME_INTENT_FILTER = "HomePhotoSelected";
 	public static final String ITEM_INTENT_FILTER = "ItemPhotoSelected";
 	public static final String Drawable_IntentKey = "drawable_source";
 	public DrawableManager drawableManager;
+	public LocalBroadcastManager broadcastManager;
 
-	public void loadDrawableManager() {
+	public void loadManagers(Context context) {
+		this.mContext = context;
 		drawableManager = DrawableManager.getInstance();
+		broadcastManager = LocalBroadcastManager
+				.getInstance(mContext);
 	}
 
 	public static enum kFragmentShowing {
@@ -67,11 +78,46 @@ public abstract class BaseFragment extends Fragment {
 		super.onCreateOptionsMenu(menu, inflater);
 	}
 
-	public void takePic(int resultCode) {
-		Intent cameraIntent = new Intent(
-				android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
-		startActivityForResult(cameraIntent, resultCode);
+	public void takePic() {
+		AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
+		builder.setTitle("Select Method");
+		builder.setMessage("Would you like to take a new photo or select one?");
+		builder.setCancelable(true);
+		builder.setNegativeButton("Take New", new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(
+							DialogInterface dialog, int pos) {
+						Intent cameraIntent = new Intent(
+								android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
+						startActivityForResult(cameraIntent, PHOTOTAKEN_RESULT_CODE);
+					}
+				});
+		builder.setPositiveButton("Select", new DialogInterface.OnClickListener() {
+			@Override
+			public void onClick(
+					DialogInterface dialog, int pos) {
+				Intent intent = new Intent();
+                intent.setType("image/*");
+                intent.setAction(Intent.ACTION_GET_CONTENT);
+                startActivityForResult(Intent.createChooser(intent,
+                        "Select Picture"), PHOTOSELECTED_RESULT_CODE);
+			}
+		});
+		builder.show();
 	}
+	
+	public String getPathFromSelectedPhoto(Uri uri) {
+		String selectedPhotoPath = null;
+        String[] projection = { MediaStore.Images.Media.DATA };
+        Cursor cursor = getActivity().managedQuery(uri, projection, null, null, null);
+        if(cursor!=null) {
+            int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+            cursor.moveToFirst();
+            selectedPhotoPath = cursor.getString(column_index);
+        }
+        
+        return selectedPhotoPath;
+    }
 
 	public String generateRandomFilename() {
 		Random generator = new Random();
@@ -85,7 +131,7 @@ public abstract class BaseFragment extends Fragment {
 		}
 		return randomStringBuilder.toString();
 	}
-	
+
 	public ArrayList<String> convertPhotoFileArrayToStringArray(
 			ArrayList<File> files) {
 		ArrayList<String> items = new ArrayList<String>();
@@ -100,7 +146,7 @@ public abstract class BaseFragment extends Fragment {
 			String filterType) {
 		Intent intent = new Intent(filterType);
 		intent.putExtra(Drawable_IntentKey, drawableSource);
-		LocalBroadcastManager.getInstance(getActivity()).sendBroadcast(intent);
+		broadcastManager.sendBroadcast(intent);
 	}
 
 	public class PhotoListAdapter extends ArrayAdapter<String> {
@@ -130,10 +176,19 @@ public abstract class BaseFragment extends Fragment {
 			}
 			String path = items.get(position);
 			if (path != null) {
+				if (drawableManager == null) {
+					drawableManager = DrawableManager.getInstance();
+				}
 				ImageView photoImageView = (ImageView) v
 						.findViewById(R.id.photoImageView);
-				photoImageView.setImageDrawable(drawableManager
-						.fetchDrawable(path));
+				Drawable image = drawableManager
+						.fetchDrawable(path);
+				
+				if (image != null) {
+					photoImageView.setImageDrawable(image);
+				} else {
+					photoImageView.setImageResource(R.drawable.no_photo_available);
+				}
 
 				if (isEditing) {
 					CheckBox edit = (CheckBox) v
@@ -143,18 +198,13 @@ public abstract class BaseFragment extends Fragment {
 						public void onCheckedChanged(CompoundButton cv,
 								boolean isChecked) {
 							if (isChecked) {
-								if (!itemsForDeletion.contains(position))
+								if (!itemsForDeletion.contains(position)) {
 									itemsForDeletion.add(position);
-								// if (deleteButton != null) {
-								// deleteButton.setEnabled(true);
-								// }
+								}
 							} else {
-								if (itemsForDeletion.contains(position))
+								if (itemsForDeletion.contains(position)) {
 									itemsForDeletion.remove(position);
-								// if (deleteButton != null &&
-								// mListingsForDeletion.isEmpty()) {
-								// deleteButton.setEnabled(false);
-								// }
+								}
 							}
 						}
 					});

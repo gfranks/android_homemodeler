@@ -2,7 +2,10 @@ package com.home.modeler.fragments;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 
 import com.home.modeler.R;
@@ -14,6 +17,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Point;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Display;
@@ -34,7 +40,10 @@ public class HomePhotosFragment extends BaseFragment implements HMHandler {
 	private PhotoListAdapter listAdapter;
 
 	public HomePhotosFragment() {
-		loadDrawableManager();
+	}
+
+	public HomePhotosFragment(Context context) {
+		loadManagers(context);
 	}
 
 	@Override
@@ -81,48 +90,18 @@ public class HomePhotosFragment extends BaseFragment implements HMHandler {
 
 	@Override
 	public void onActivityResult(int requestCode, int resultCode, Intent data) {
-		if (requestCode == HOME_PHOTO_RESULT_CODE) {
-			Bitmap photo = (Bitmap) data.getExtras().get("data");
-			try {
-				File dir = getActivity().getDir(HOME_FILE_DIR,
-						Context.MODE_PRIVATE);
-				File newPhoto = new File(dir.getAbsolutePath() + File.separator
-						+ generateRandomFilename() + ".png");
-				FileOutputStream out = new FileOutputStream(newPhoto);
-				photo.compress(Bitmap.CompressFormat.PNG, 90, out);
-				BufferedOutputStream bos = new BufferedOutputStream(
-						new FileOutputStream(newPhoto), 16 * 1024);
-				bos.close();
-
-				checkIfPhotosExist();
-
-				Display display = getActivity().getWindowManager()
-						.getDefaultDisplay();
-				Point size = new Point();
-				display.getSize(size);
-
-				drawableManager
-						.addDrawableToManager(newPhoto.getAbsolutePath(),
-								drawableManager.resizeBitmapForDrawable(photo,
-										size.x, size.y));
-
-				// reload listview
-				listAdapter.notifyDataSetChanged();
-
-				Log.e(HomePhotosFragment.class.getName()
-						+ ".onActivityResult()", "PHOTO ADDED");
-			} catch (Exception e) {
-				e.printStackTrace();
-				Log.e(HomePhotosFragment.class.getName()
-						+ ".onActivityResult()", "CAUGHT EXCEPTION");
-				;
-			}
+		if (requestCode == PHOTOTAKEN_RESULT_CODE) {
+			loadTakenPhoto(data);
+		}
+		
+		if (requestCode == PHOTOSELECTED_RESULT_CODE) {
+			loadSelectedPhoto(data);
 		}
 	}
 
 	@Override
 	public void onAddPhoto() {
-		takePic(HOME_PHOTO_RESULT_CODE);
+		takePic();
 	}
 
 	@Override
@@ -151,6 +130,103 @@ public class HomePhotosFragment extends BaseFragment implements HMHandler {
 					R.string.photo_tiles_edit));
 			listAdapter.notifyDataSetChanged(false);
 		}
+	}
+	
+	private void loadTakenPhoto(Intent data) {
+		Bitmap photo = (Bitmap) data.getExtras().get("data");
+		try {
+			File dir = getActivity().getDir(HOME_FILE_DIR,
+					Context.MODE_PRIVATE);
+			File newPhoto = new File(dir.getAbsolutePath() + File.separator
+					+ generateRandomFilename() + ".png");
+			FileOutputStream out = new FileOutputStream(newPhoto);
+			photo.compress(Bitmap.CompressFormat.PNG, 90, out);
+			BufferedOutputStream bos = new BufferedOutputStream(
+					new FileOutputStream(newPhoto), 16 * 1024);
+			bos.close();
+
+			checkIfPhotosExist();
+
+			Display display = getActivity().getWindowManager()
+					.getDefaultDisplay();
+			Point size = new Point();
+			display.getSize(size);
+
+			drawableManager
+					.addDrawableToManager(newPhoto.getAbsolutePath(),
+							drawableManager.resizeBitmapForDrawable(photo,
+									size.x, size.y));
+
+			// reload listview
+			listAdapter.notifyDataSetChanged();
+
+			Log.e(HomePhotosFragment.class.getName()
+					+ ".onActivityResult()", "PHOTO ADDED");
+		} catch (Exception e) {
+			e.printStackTrace();
+			Log.e(HomePhotosFragment.class.getName()
+					+ ".onActivityResult()", "CAUGHT EXCEPTION");
+		}
+	}
+	
+	private void loadSelectedPhoto(Intent data) {
+		String imagePath = null;
+		Uri selectedImageUri = data.getData();
+
+        String filemanagerPhotoPath = selectedImageUri.getPath();
+        String selectedImagePath = null;
+
+        if(filemanagerPhotoPath!=null) {
+            imagePath = filemanagerPhotoPath;
+        } else {
+            selectedImagePath = getPathFromSelectedPhoto(selectedImageUri);
+        }
+        
+        if(selectedImagePath!=null) {
+            imagePath = selectedImagePath;
+        }
+        
+        if (imagePath != null) {
+        	try {
+        		File src = new File(imagePath);
+        		File dir = getActivity().getDir(HOME_FILE_DIR,
+    					Context.MODE_PRIVATE);
+    			File newPhoto = new File(dir.getAbsolutePath() + File.separator
+    					+ generateRandomFilename() + ".png");
+	        	InputStream is = new FileInputStream(src);
+	            OutputStream os = new FileOutputStream(newPhoto);
+	            byte[] buff=new byte[1024];
+	            int len;
+	            while((len=is.read(buff))>0){
+	                os.write(buff,0,len);
+	            }
+	            is.close();
+	            os.close();
+	            
+	            checkIfPhotosExist();
+
+				Display display = getActivity().getWindowManager()
+						.getDefaultDisplay();
+				Point size = new Point();
+				display.getSize(size);
+
+				drawableManager
+						.addDrawableToManager(newPhoto.getAbsolutePath(),
+								drawableManager.resizeBitmapForDrawable(
+										((BitmapDrawable)Drawable.createFromPath(newPhoto.getAbsolutePath())).getBitmap(),
+										size.x, size.y));
+
+				// reload listview
+				listAdapter.notifyDataSetChanged();
+
+				Log.e(HomePhotosFragment.class.getName()
+						+ ".onActivityResult()", "PHOTO ADDED");
+        	} catch(Exception e) {
+        		e.printStackTrace();
+    			Log.e(HomePhotosFragment.class.getName()
+    					+ ".onActivityResult()", "CAUGHT EXCEPTION");
+        	}
+        }
 	}
 
 	private OnItemSelectedListener homePhotoSelectedListener = new OnItemSelectedListener() {

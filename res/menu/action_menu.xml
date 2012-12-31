@@ -1,23 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android" >
     <item
-        android:id="@+id/home_photo"
-        android:title="Home Photos"
-        android:showAsAction="ifRoom|withText"
-    />
-    <item
-        android:id="@+id/modeler"
-        android:title="Modeler"
-        android:showAsAction="ifRoom|withText"
-    />
-    
-    <item
-        android:id="@+id/item_photo"
-        android:title="Item Photos"
-        android:showAsAction="ifRoom|withText"
-    />
-    
-    <item
         android:id="@+id/search"
         android:title="Search"
         android:showAsAction="ifRoom|collapseActionView"

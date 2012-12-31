@@ -1,10 +1,15 @@
 package com.home.modeler.utils;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
 import android.annotation.SuppressLint;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
@@ -36,10 +41,12 @@ public class DrawableManager {
 
         Log.d(this.getClass().getSimpleName(), "image url:" + path);
         
-        Drawable drawable = Drawable.createFromPath(path);
+//        Drawable drawable = Drawable.createFromPath(path);
+        Bitmap bitmap = decodeFile(path);
+        Drawable drawable = null;
 
-
-        if (drawable != null) {
+        if (bitmap != null) {
+            drawable = new BitmapDrawable(bitmap);
             drawableMap.put(path, drawable);
             Log.d(this.getClass().getSimpleName(), "got a thumbnail drawable: " + drawable.getBounds() + ", "
                     + drawable.getIntrinsicHeight() + "," + drawable.getIntrinsicWidth() + ", "
@@ -98,5 +105,35 @@ public class DrawableManager {
     	
         Bitmap bitmapOrig = Bitmap.createScaledBitmap(bitmap, newWidth*2, newHeight*2, false);
         return new BitmapDrawable(bitmapOrig);
+    }
+    
+    private Bitmap decodeFile(String filePath){
+    	File f = new File(filePath);
+        Bitmap b = null;
+        try {
+            //Decode image size
+            BitmapFactory.Options o = new BitmapFactory.Options();
+            o.inJustDecodeBounds = true;
+
+            FileInputStream fis = new FileInputStream(f);
+            BitmapFactory.decodeStream(fis, null, o);
+            fis.close();
+
+            int scale = 1;
+//            if (o.outHeight > IMAGE_MAX_SIZE || o.outWidth > IMAGE_MAX_SIZE) {
+//                scale = Math.pow(2, (int) Math.round(Math.log(IMAGE_MAX_SIZE / (double) Math.max(o.outHeight, o.outWidth)) / Math.log(0.5)));
+//            }
+
+            //Decode with inSampleSize
+            BitmapFactory.Options o2 = new BitmapFactory.Options();
+            o2.inSampleSize = scale;
+            fis = new FileInputStream(f);
+            b = BitmapFactory.decodeStream(fis, null, o2);
+            fis.close();
+        } catch (FileNotFoundException e) {
+        } catch (IOException e) {
+			e.printStackTrace();
+		}
+        return b;
     }
 }

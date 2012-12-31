@@ -10,7 +10,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -19,13 +18,19 @@ import android.widget.ImageView;
 
 public class ModelerFragment extends BaseFragment {
 
+	private Context mContext;
 	private ImageView selectedHomePhoto, selectedItemPhoto;
 
 	public ModelerFragment() {
-		LocalBroadcastManager.getInstance(getActivity()).registerReceiver(mHomePhotoSelectedReceiver,
-			      new IntentFilter(HOME_INTENT_FILTER));
-		LocalBroadcastManager.getInstance(getActivity()).registerReceiver(mItemPhotoSelectedReceiver,
-			      new IntentFilter(ITEM_INTENT_FILTER));
+	}
+
+	public ModelerFragment(Context context) {
+		this.mContext = context;
+		loadManagers(mContext);
+		broadcastManager.registerReceiver(mHomePhotoSelectedReceiver,
+				new IntentFilter(HOME_INTENT_FILTER));
+		broadcastManager.registerReceiver(mItemPhotoSelectedReceiver,
+				new IntentFilter(ITEM_INTENT_FILTER));
 	}
 
 	@Override
@@ -46,7 +51,8 @@ public class ModelerFragment extends BaseFragment {
 		public void onReceive(Context context, Intent intent) {
 			Log.d("Home Photo Receiver", "Got home photo");
 			String drawablePath = intent.getStringExtra(Drawable_IntentKey);
-			Drawable homePhoto = DrawableManager.getInstance().fetchDrawable(drawablePath);
+			Drawable homePhoto = DrawableManager.getInstance().fetchDrawable(
+					drawablePath);
 			selectedHomePhoto.setImageDrawable(homePhoto);
 		}
 	};
@@ -56,17 +62,18 @@ public class ModelerFragment extends BaseFragment {
 		public void onReceive(Context context, Intent intent) {
 			Log.d("Home Photo Receiver", "Got home photo");
 			String drawablePath = intent.getStringExtra(Drawable_IntentKey);
-			Drawable itemPhoto = DrawableManager.getInstance().fetchDrawable(drawablePath);
+			Drawable itemPhoto = DrawableManager.getInstance().fetchDrawable(
+					drawablePath);
 			selectedItemPhoto.setImageDrawable(itemPhoto);
 		}
 	};
-	
+
 	public void onDestroy() {
-		  LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(mHomePhotoSelectedReceiver);
-		  LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(mItemPhotoSelectedReceiver);
-		  super.onDestroy();
+		broadcastManager.unregisterReceiver(mHomePhotoSelectedReceiver);
+		broadcastManager.unregisterReceiver(mItemPhotoSelectedReceiver);
+		super.onDestroy();
 	};
-	
+
 	@Override
 	public void loadPhotos() {
 	}

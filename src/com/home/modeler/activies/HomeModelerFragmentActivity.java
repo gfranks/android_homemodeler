@@ -36,43 +36,34 @@ public class HomeModelerFragmentActivity extends FragmentActivity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
-		
+
 		getActionBar().setHomeButtonEnabled(true);
 		setUpView();
 		setTab();
 	}
-	
+
 	@Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.action_menu, menu);
-        View v = (View) menu.findItem(R.id.search).getActionView();
-        EditText txtSearch = (EditText)v.findViewById(R.id.txt_search);
- 
-        txtSearch.setOnEditorActionListener(new OnEditorActionListener() {
- 
-            @Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		getMenuInflater().inflate(R.menu.action_menu, menu);
+		View v = (View) menu.findItem(R.id.search).getActionView();
+		EditText txtSearch = (EditText) v.findViewById(R.id.txt_search);
+
+		txtSearch.setOnEditorActionListener(new OnEditorActionListener() {
+
+			@Override
 			public boolean onEditorAction(TextView v, int arg1, KeyEvent arg2) {
-            	Toast.makeText(getBaseContext(), "Search : " + v.getText(), 
-            			Toast.LENGTH_SHORT).show();
-                return false;
+				Toast.makeText(getBaseContext(), "Search : " + v.getText(),
+						Toast.LENGTH_SHORT).show();
+				return false;
 			}
-        });
- 
-        return super.onCreateOptionsMenu(menu);
-    }
-	
+		});
+
+		return super.onCreateOptionsMenu(menu);
+	}
+
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
-		switch(item.getItemId()) {
-		case R.id.home_photo:
-			_mViewPager.setCurrentItem(0);
-			break;
-		case R.id.modeler:
-			_mViewPager.setCurrentItem(1);
-			break;
-		case R.id.item_photo:
-			_mViewPager.setCurrentItem(2);
-			break;
+		switch (item.getItemId()) {
 		case R.id.close:
 			finish();
 			break;
@@ -83,9 +74,9 @@ public class HomeModelerFragmentActivity extends FragmentActivity {
 	private void setUpView() {
 		_mViewPager = (ViewPager) findViewById(R.id.viewPager);
 
-		homePhotosFragment = new HomePhotosFragment();
-		itemPhotosFragment = new ItemPhotosFragment();
-		modelerFragment = new ModelerFragment();
+		homePhotosFragment = new HomePhotosFragment(this);
+		itemPhotosFragment = new ItemPhotosFragment(this);
+		modelerFragment = new ModelerFragment(this);
 
 		_adapter = new ViewPagerAdapter(getApplicationContext(),
 				getSupportFragmentManager());
