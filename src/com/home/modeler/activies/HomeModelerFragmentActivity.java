@@ -128,6 +128,7 @@ public class HomeModelerFragmentActivity extends FragmentActivity {
 	}
 
 	public class ViewPagerAdapter extends FragmentPagerAdapter {
+		@SuppressWarnings("unused")
 		private Context _context;
 
 		public ViewPagerAdapter(Context context, FragmentManager fm) {

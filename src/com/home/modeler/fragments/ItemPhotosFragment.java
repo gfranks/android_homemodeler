@@ -12,7 +12,9 @@ import com.home.modeler.R;
 import com.home.modeler.base.BaseFragment;
 import com.home.modeler.ui.HMTiles;
 import com.home.modeler.ui.HMTiles.HMHandler;
+import com.home.modeler.utils.HMConstants;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -31,6 +33,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.AdapterView.OnItemSelectedListener;
 
+@SuppressLint("ValidFragment") 
 public class ItemPhotosFragment extends BaseFragment implements HMHandler {
 
 	private HMTiles itemPhotoTiles;
@@ -81,7 +84,7 @@ public class ItemPhotosFragment extends BaseFragment implements HMHandler {
 	@Override
 	public void loadPhotos() {
 		itemPhotos = new ArrayList<File>();
-		File[] photos = getActivity().getDir(ITEM_FILE_DIR,
+		File[] photos = getActivity().getDir(HMConstants.ITEM_FILE_DIR,
 				Context.MODE_PRIVATE).listFiles();
 		for (File f : photos) {
 			itemPhotos.add(f);
@@ -90,11 +93,11 @@ public class ItemPhotosFragment extends BaseFragment implements HMHandler {
 
 	@Override
 	public void onActivityResult(int requestCode, int resultCode, Intent data) {
-		if (requestCode == PHOTOTAKEN_RESULT_CODE) {
+		if (requestCode == HMConstants.PHOTOTAKEN_RESULT_CODE) {
 			loadTakenPhoto(data);
 		}
 		
-		if (requestCode == PHOTOSELECTED_RESULT_CODE) {
+		if (requestCode == HMConstants.PHOTOSELECTED_RESULT_CODE) {
 			loadSelectedPhoto(data);
 		}
 	}
@@ -135,7 +138,7 @@ public class ItemPhotosFragment extends BaseFragment implements HMHandler {
 	private void loadTakenPhoto(Intent data) {
 		Bitmap photo = (Bitmap) data.getExtras().get("data");
 		try {
-			File dir = getActivity().getDir(ITEM_FILE_DIR,
+			File dir = getActivity().getDir(HMConstants.ITEM_FILE_DIR,
 					Context.MODE_PRIVATE);
 			File newPhoto = new File(dir.getAbsolutePath() + File.separator
 					+ generateRandomFilename() + ".png");
@@ -189,7 +192,7 @@ public class ItemPhotosFragment extends BaseFragment implements HMHandler {
         if (imagePath != null) {
         	try {
         		File src = new File(imagePath);
-        		File dir = getActivity().getDir(ITEM_FILE_DIR,
+        		File dir = getActivity().getDir(HMConstants.ITEM_FILE_DIR,
     					Context.MODE_PRIVATE);
     			File newPhoto = new File(dir.getAbsolutePath() + File.separator
     					+ generateRandomFilename() + ".png");
@@ -235,7 +238,7 @@ public class ItemPhotosFragment extends BaseFragment implements HMHandler {
 		public void onItemSelected(AdapterView<?> av, View v, int position,
 				long id) {
 			sendBroadcastWithDrawableAndFilter(itemPhotos.get(position)
-					.getAbsolutePath(), ITEM_INTENT_FILTER);
+					.getAbsolutePath(), HMConstants.ITEM_INTENT_FILTER);
 		}
 
 		@Override

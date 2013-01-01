@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
@@ -21,14 +22,16 @@ import android.widget.ImageView;
 public class DrawableManager {
     private final Map<String, Drawable> drawableMap;
     public static DrawableManager instance;
+    private int targetDensity;
 
     private DrawableManager() {
         drawableMap = new HashMap<String, Drawable>();
     }
     
-    public static DrawableManager getInstance() {
+    public static DrawableManager getInstance(Context context) {
     	if (instance == null) {
     		instance = new DrawableManager();
+    		instance.targetDensity = context.getResources().getDisplayMetrics().densityDpi;
     	}
     	
     	return instance;
@@ -112,21 +115,19 @@ public class DrawableManager {
         Bitmap b = null;
         try {
             //Decode image size
-            BitmapFactory.Options o = new BitmapFactory.Options();
-            o.inJustDecodeBounds = true;
+            BitmapFactory.Options o1 = new BitmapFactory.Options();
+            o1.inJustDecodeBounds = true;
 
             FileInputStream fis = new FileInputStream(f);
-            BitmapFactory.decodeStream(fis, null, o);
+            BitmapFactory.decodeStream(fis, null, o1);
             fis.close();
 
-            int scale = 1;
-//            if (o.outHeight > IMAGE_MAX_SIZE || o.outWidth > IMAGE_MAX_SIZE) {
-//                scale = Math.pow(2, (int) Math.round(Math.log(IMAGE_MAX_SIZE / (double) Math.max(o.outHeight, o.outWidth)) / Math.log(0.5)));
-//            }
-
-            //Decode with inSampleSize
             BitmapFactory.Options o2 = new BitmapFactory.Options();
-            o2.inSampleSize = scale;
+            o2.inPurgeable      = true;
+            o2.inInputShareable = true;
+            o2.inDensity        = targetDensity;
+            o2.inTargetDensity  = targetDensity;
+            
             fis = new FileInputStream(f);
             b = BitmapFactory.decodeStream(fis, null, o2);
             fis.close();

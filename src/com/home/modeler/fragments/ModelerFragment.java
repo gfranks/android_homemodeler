@@ -2,8 +2,9 @@ package com.home.modeler.fragments;
 
 import com.home.modeler.R;
 import com.home.modeler.base.BaseFragment;
-import com.home.modeler.utils.DrawableManager;
+import com.home.modeler.utils.HMConstants;
 
+import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -16,6 +17,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
+@SuppressLint("ValidFragment") 
 public class ModelerFragment extends BaseFragment {
 
 	private Context mContext;
@@ -28,9 +30,9 @@ public class ModelerFragment extends BaseFragment {
 		this.mContext = context;
 		loadManagers(mContext);
 		broadcastManager.registerReceiver(mHomePhotoSelectedReceiver,
-				new IntentFilter(HOME_INTENT_FILTER));
+				new IntentFilter(HMConstants.HOME_INTENT_FILTER));
 		broadcastManager.registerReceiver(mItemPhotoSelectedReceiver,
-				new IntentFilter(ITEM_INTENT_FILTER));
+				new IntentFilter(HMConstants.ITEM_INTENT_FILTER));
 	}
 
 	@Override
@@ -50,8 +52,8 @@ public class ModelerFragment extends BaseFragment {
 		@Override
 		public void onReceive(Context context, Intent intent) {
 			Log.d("Home Photo Receiver", "Got home photo");
-			String drawablePath = intent.getStringExtra(Drawable_IntentKey);
-			Drawable homePhoto = DrawableManager.getInstance().fetchDrawable(
+			String drawablePath = intent.getStringExtra(HMConstants.Drawable_IntentKey);
+			Drawable homePhoto = drawableManager.fetchDrawable(
 					drawablePath);
 			selectedHomePhoto.setImageDrawable(homePhoto);
 		}
@@ -61,8 +63,8 @@ public class ModelerFragment extends BaseFragment {
 		@Override
 		public void onReceive(Context context, Intent intent) {
 			Log.d("Home Photo Receiver", "Got home photo");
-			String drawablePath = intent.getStringExtra(Drawable_IntentKey);
-			Drawable itemPhoto = DrawableManager.getInstance().fetchDrawable(
+			String drawablePath = intent.getStringExtra(HMConstants.Drawable_IntentKey);
+			Drawable itemPhoto = drawableManager.fetchDrawable(
 					drawablePath);
 			selectedItemPhoto.setImageDrawable(itemPhoto);
 		}

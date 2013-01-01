@@ -6,6 +6,7 @@ import java.util.Random;
 
 import com.home.modeler.R;
 import com.home.modeler.utils.DrawableManager;
+import com.home.modeler.utils.HMConstants;
 
 import android.app.AlertDialog;
 import android.content.Context;
@@ -32,19 +33,12 @@ public abstract class BaseFragment extends Fragment {
 
 	private Context mContext;
 	private int MAX_FILENAME_LENGTH = 100;
-	public final int PHOTOTAKEN_RESULT_CODE = 101;
-	public final int PHOTOSELECTED_RESULT_CODE = 102;
-	public static final String HOME_FILE_DIR = "HomePhotos";
-	public static final String ITEM_FILE_DIR = "ItemPhotos";
-	public static final String HOME_INTENT_FILTER = "HomePhotoSelected";
-	public static final String ITEM_INTENT_FILTER = "ItemPhotoSelected";
-	public static final String Drawable_IntentKey = "drawable_source";
 	public DrawableManager drawableManager;
 	public LocalBroadcastManager broadcastManager;
 
 	public void loadManagers(Context context) {
 		this.mContext = context;
-		drawableManager = DrawableManager.getInstance();
+		drawableManager = DrawableManager.getInstance(mContext);
 		broadcastManager = LocalBroadcastManager
 				.getInstance(mContext);
 	}
@@ -89,7 +83,7 @@ public abstract class BaseFragment extends Fragment {
 							DialogInterface dialog, int pos) {
 						Intent cameraIntent = new Intent(
 								android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
-						startActivityForResult(cameraIntent, PHOTOTAKEN_RESULT_CODE);
+						startActivityForResult(cameraIntent, HMConstants.PHOTOTAKEN_RESULT_CODE);
 					}
 				});
 		builder.setPositiveButton("Select", new DialogInterface.OnClickListener() {
@@ -100,7 +94,7 @@ public abstract class BaseFragment extends Fragment {
                 intent.setType("image/*");
                 intent.setAction(Intent.ACTION_GET_CONTENT);
                 startActivityForResult(Intent.createChooser(intent,
-                        "Select Picture"), PHOTOSELECTED_RESULT_CODE);
+                        "Select Picture"), HMConstants.PHOTOSELECTED_RESULT_CODE);
 			}
 		});
 		builder.show();
@@ -145,7 +139,7 @@ public abstract class BaseFragment extends Fragment {
 	public void sendBroadcastWithDrawableAndFilter(String drawableSource,
 			String filterType) {
 		Intent intent = new Intent(filterType);
-		intent.putExtra(Drawable_IntentKey, drawableSource);
+		intent.putExtra(HMConstants.Drawable_IntentKey, drawableSource);
 		broadcastManager.sendBroadcast(intent);
 	}
 
@@ -176,9 +170,6 @@ public abstract class BaseFragment extends Fragment {
 			}
 			String path = items.get(position);
 			if (path != null) {
-				if (drawableManager == null) {
-					drawableManager = DrawableManager.getInstance();
-				}
 				ImageView photoImageView = (ImageView) v
 						.findViewById(R.id.photoImageView);
 				Drawable image = drawableManager
